@@ -1,5 +1,5 @@
 from langchain_openai import ChatOpenAI
-from langchain.prompts.chat import SystemMessagePromptTemplate, ChatPromptTemplate
+from langchain_core.prompts.chat import SystemMessagePromptTemplate, ChatPromptTemplate
 
 import os
 
