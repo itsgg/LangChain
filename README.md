@@ -9,6 +9,7 @@ Playground for LangChain experiments and examples.
 3. **Batch Processing** (`03_batch_chat.py`): Shows how to process multiple chat requests concurrently.
 4. **Translation Prompt** (`04_translation_prompt.py`): Example of using prompt templates for language translation.
 5. **Business Name Generator** (`05_business_name_generator.py`): Advanced example of using templates to generate business names with specific criteria.
+6. **Business Name Parser** (`06_business_name_parser.py`): Demonstrates using Pydantic output parsers for structured business name generation.
 
 ## Setup
 
