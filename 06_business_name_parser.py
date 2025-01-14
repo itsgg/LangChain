@@ -1,11 +1,16 @@
-from typing import List
+"""Business name generator with structured output parsing.
 
+This module generates creative business names for a given industry using OpenAI's ChatGPT
+and parses the output into structured data using Pydantic models.
+"""
+
+from typing import List, Tuple
+import os
+from dotenv import load_dotenv
 from langchain_core.output_parsers import PydanticOutputParser
 from langchain_core.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate
 from langchain_openai.chat_models import ChatOpenAI
 from pydantic import BaseModel, Field
-import os
-from dotenv import load_dotenv
 
 
 class BusinessName(BaseModel):
@@ -34,10 +39,12 @@ class BusinessNames(BaseModel):
     names: List[BusinessName] = Field(description="The list of business names")
 
 
-# Business name generation configuration
-TEMPERATURE: float = 0.0
-MAX_NAME_LENGTH: int = 10
+# Configuration constants
+TEMPERATURE: float = 0.0  # Lower temperature for more focused outputs
+MAX_NAME_LENGTH: int = 10  # Maximum length for generated business names
+NUM_NAMES: int = 5  # Number of business names to generate
 
+# Prompt templates
 BUSINESS_NAME_PRINCIPLES: str = """
 1. The name must be easy to remember
 2. Consider the {industry} industry context to create an effective name
@@ -51,7 +58,7 @@ BUSINESS_NAME_PRINCIPLES: str = """
 
 GENERATION_TEMPLATE: str = """You are a business name generator.
 
-Your task is to generate 5 creative business names for a startup in the {industry} industry.
+Your task is to generate {num_names} creative business names for a startup in the {industry} industry.
 
 Follow these principles:
 {principles}
@@ -63,14 +70,14 @@ Generate the names now:"""
 
 
 def validate_industry(industry: str) -> str:
-    """Validate the industry input.
-    
+    """Validate and normalize the industry input.
+
     Args:
         industry: The industry to validate
-        
+
     Returns:
-        str: The validated industry name
-        
+        The validated and normalized industry name
+
     Raises:
         ValueError: If industry is empty or invalid
     """
@@ -79,16 +86,16 @@ def validate_industry(industry: str) -> str:
     return industry.lower().strip()
 
 
-def setup_name_generator() -> tuple[ChatPromptTemplate, PydanticOutputParser]:
+def setup_name_generator() -> Tuple[ChatPromptTemplate, PydanticOutputParser]:
     """Initialize and configure the name generation components.
 
     Returns:
-        tuple: Contains the configured chat prompt and output parser
+        A tuple containing the configured chat prompt and output parser
     """
     # Initialize the output parser for structured results
     parser = PydanticOutputParser(pydantic_object=BusinessNames)
 
-    # Setup the chat prompt template
+    # Setup the chat prompt template with system message
     system_message = SystemMessagePromptTemplate.from_template(GENERATION_TEMPLATE)
     chat_prompt = ChatPromptTemplate.from_messages([system_message])
 
@@ -102,49 +109,53 @@ def generate_business_names(industry: str) -> BusinessNames:
         industry: The target industry for name generation
 
     Returns:
-        BusinessNames: Object containing generated names and their ratings
-        
+        BusinessNames object containing generated names and their ratings
+
     Raises:
         ValueError: If industry validation fails
+        Exception: If name generation fails
     """
-    # Load environment variables
+    # Load environment variables for API key
     load_dotenv()
 
-    # Validate input
+    # Validate and normalize input
     validated_industry = validate_industry(industry)
 
-    # Initialize components
+    # Initialize generation components
     chat_prompt, parser = setup_name_generator()
     model = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"), temperature=TEMPERATURE)
 
-    # Create the generation pipeline
+    # Create and execute the generation pipeline
     prompt_and_model = chat_prompt | model
-
-    # Generate names
     result = prompt_and_model.invoke(
         {
             "industry": validated_industry,
+            "num_names": NUM_NAMES,
             "principles": BUSINESS_NAME_PRINCIPLES.format(
-                industry=validated_industry,
-                max_length=MAX_NAME_LENGTH
+                industry=validated_industry, max_length=MAX_NAME_LENGTH
             ),
             "format_instructions": parser.get_format_instructions(),
         }
     )
 
+    # Parse and return structured results
     return parser.parse(result.content)
 
 
 def main() -> None:
     """Main entry point for the business name generator."""
     try:
+        # Example usage with technology industry
         business_names = generate_business_names("technology")
-        print(business_names)
+        print("\nGenerated Business Names:")
+        print("------------------------")
+        for name_obj in business_names.names:
+            print(f"Name: {name_obj.name}, Rating: {name_obj.rating_score}")
     except ValueError as e:
-        print(f"Invalid input: {str(e)}")
+        print(f"Input validation error: {str(e)}")
     except Exception as e:
         print(f"Error generating business names: {str(e)}")
 
 
 if __name__ == "__main__":
-    main() 
+    main()
