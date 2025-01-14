@@ -2,6 +2,14 @@
 
 Playground for LangChain experiments and examples.
 
+## Examples
+
+1. **Basic Chat** (`01_basic_chat.py`): Simple example of using ChatOpenAI for basic question answering.
+2. **Streaming Chat** (`02_streaming_chat.py`): Demonstrates streaming responses from ChatGPT for real-time output.
+3. **Batch Processing** (`03_batch_chat.py`): Shows how to process multiple chat requests concurrently.
+4. **Translation Prompt** (`04_translation_prompt.py`): Example of using prompt templates for language translation.
+5. **Business Name Generator** (`05_business_name_generator.py`): Advanced example of using templates to generate business names with specific criteria.
+
 ## Setup
 
 ### Prerequisites
