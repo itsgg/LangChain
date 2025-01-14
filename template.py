@@ -5,6 +5,7 @@ import os
 
 model = ChatOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+
 template = """
 You are a creative consultant brainstorming names for businesses.
 
@@ -25,8 +26,24 @@ chat_prompt = ChatPromptTemplate.from_messages([system_prompt])
 
 chain = chat_prompt | model
 
+
 def main():
-    print(chain.invoke({"principles": "The names must be catchy and memorable", "industry": "technology", "context": "AI"}))
+    principles = """
+1. Each name should be short and easy to remember
+2. Each name should be unique and not similar to existing names
+3. Each name should be relevant to the industry and context
+4. Each name should be catchy and memorable
+5. Each name should be one word
+"""
+    industry = "technology"
+    context = "AI"
+
+    print(
+        chain.invoke(
+            {"principles": principles, "industry": industry, "context": context}
+        )
+    )
+
 
 if __name__ == "__main__":
     main()
